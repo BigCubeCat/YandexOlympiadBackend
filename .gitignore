@@ -2,4 +2,4 @@ data.db
 data.db-journal
 searching.log
 .env
-.idea
+.idea/*
