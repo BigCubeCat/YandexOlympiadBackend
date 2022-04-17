@@ -7,20 +7,16 @@ import (
 	"log"
 )
 
-var db *gorm.DB
-
-func GetDB() *gorm.DB {
-	return db
-}
+var DB *gorm.DB
 
 func InitDB(dbName string) {
 	var err error
-	db, err = gorm.Open(sqlite.Open(dbName), &gorm.Config{})
+	DB, err = gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	err = db.AutoMigrate(&Recipe{}, &Ingredient{})
+	err = DB.AutoMigrate(&Recipe{}, &Ingredient{})
 	if err != nil {
 		log.Fatalln("Cant Auto-migrate")
 		return

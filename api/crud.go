@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"search/db"
@@ -14,15 +15,18 @@ func CreateRecipe(c *fiber.Ctx) error {
 		c.Status(http.StatusBadRequest)
 		return err
 	}
+	fmt.Println(request)
 	recipe := db.Recipe{
 		Title:       request.Title,
 		Description: request.Description,
 		Link:        request.Link,
+		Ingredients: []*db.Ingredient{},
 	}
 	for _, ingr := range request.Ingredients {
 		recipe.Ingredients = append(recipe.Ingredients, &db.Ingredient{Title: ingr})
 	}
-	if err = db.GetDB().Create(recipe).Error; err != nil {
+	fmt.Println(recipe)
+	if err = db.DB.Create(&recipe).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		return err
 	}

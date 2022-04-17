@@ -1,10 +1,10 @@
 package db
 
 type Recipe struct {
-	RecipeId    uint `gorm:"primaryKey"`
+	RecipeId    int `gorm:"primaryKey"`
 	Title       string
 	Description string
-	Rating      uint
+	Rating      int
 	Link        string
 	Ingredients []*Ingredient `gorm:"many2many:ingredients"`
 }

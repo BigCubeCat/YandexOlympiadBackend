@@ -8,6 +8,6 @@ type RecipeJSON struct {
 }
 
 type RequestJSON struct {
-	GoodIngredients []string
-	BadIngredients  []string
+	GoodIngredients []string `json:"good"`
+	BadIngredients  []string `json:"bad"`
 }
