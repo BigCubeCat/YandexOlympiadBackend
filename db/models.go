@@ -4,7 +4,8 @@ type Recipe struct {
 	RecipeId    uint `gorm:"primary_key:true"`
 	Title       string
 	Description string
-	Rating      uint
+	CountRates 	int
+	Rating      float32
 	Link        string
 	Ingredients []Ingredient `gorm:"many2many:recipe_ingredients"`
 }

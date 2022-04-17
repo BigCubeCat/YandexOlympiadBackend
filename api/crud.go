@@ -33,3 +33,27 @@ func CreateRecipe(c *fiber.Ctx) error {
 	c.Status(http.StatusOK)
 	return nil
 }
+
+func AddRate(c *fiber.Ctx) error {
+	c.Accepts("application/json")
+    id := c.Param("id")
+    rate := c.Param("rate")
+    var recipe db.Recipe
+    if err := db.DB.Where("recipe_id = ?", id).First(&recipe).Error; err != nil {
+        return err 
+    }
+    new_rating := (recipe.Rating * recipe.CountRates + rate) / (recipe.CountRates + 1)
+    c.Status(http.StatusOK)
+    err = db.Model(&recipe).Updates(
+        db.Recipe{
+            Rating: new_rating, 
+            CountRates: recipe.CountRates + 1,
+        }
+    ).Error
+    if err != nil {
+        c.Status(http.StatusInternalServerError)
+        return err
+    }
+    c.Status(http.StatusOK)
+    return nil
+}
