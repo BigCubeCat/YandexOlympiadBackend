@@ -1,14 +1,13 @@
 package db
 
 type Recipe struct {
-	RecipeId    uint `gorm:"primaryKey"`
+	RecipeId    uint `gorm:"primary_key:true"`
 	Title       string
 	Description string
 	Rating      uint
 	Link        string
-	Ingredients []Ingredient `gorm:"many2many:recipe_ingredients;foreignKey:IngredientId"`
+	Ingredients []Ingredient `gorm:"many2many:recipe_ingredients"`
 }
 type Ingredient struct {
-	IngredientID uint `gorm:"primaryKey"`
-	Title        string
+	Title string `gorm:"primary_key:true"`
 }
