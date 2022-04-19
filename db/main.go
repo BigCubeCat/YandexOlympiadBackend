@@ -16,7 +16,7 @@ func InitDB(dbName string) {
 		fmt.Println(err)
 		return
 	}
-	err = DB.AutoMigrate(&Recipe{}, &Ingredient{})
+	err = DB.AutoMigrate(&Recipe{}, &Ingredient{}, &IngredientsSet{})
 	if err != nil {
 		log.Fatalln("Cant Auto-migrate")
 		return

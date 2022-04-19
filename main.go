@@ -40,6 +40,7 @@ func main() {
 
 	app.Add("GET", "/find", api.GetRecipes)
 	app.Add("POST", "/add", api.CreateRecipe)
+	app.Add("PUT", "/rate/:id/:rate", api.AddRate)
 
 	log.Fatal(app.Listen(host + ":" + address))
 

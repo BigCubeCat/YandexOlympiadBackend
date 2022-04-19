@@ -1,34 +1,48 @@
 package db
 
-import "fmt"
+import (
+	"golang.org/x/exp/slices"
+)
 
-func FindRecipes(ingredients []string, stopList []string) ([]Recipe, error) {
-	var recipes []Recipe
-	fmt.Println(ingredients, stopList)
-	err := DB.Preload("Ingredients").Order("rating").Find(&recipes).Error
-	//err := DB.Preload("Ingredients").Order("rating").Not(map[string]interface{}{"title": stopList}).Find(&recipes, ingredients).Error
-	fmt.Println(recipes)
-	return recipes, err
-}
-
-/*
-{
-	"good": ["Хлеб", "Молоко", "Гвозди"],
-	"bad": []
-}
-*/
-
-func CreateRecipesIngredients(ingredients []string) ([]Ingredient, error) {
+func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, error) {
 	var (
-		ingredientObject Ingredient
-		result           []Ingredient
-		err              error
+		recipe Recipe
+		sets   []IngredientsSet
+		err    error
 	)
-	for _, ingredient := range ingredients {
-		if err = DB.Where("title = ?", ingredient).First(&ingredientObject).Error; err != nil {
-		} else {
-			result = append(result, ingredientObject)
+	dict := make(map[uint]int)
+	err = DB.Preload("Ingredients").Find(&sets).Error
+	for _, set := range sets {
+		count := 0
+		good := true
+		for _, ingr := range set.Ingredients {
+			// Check, what set not contain ingredient from bad list
+			if slices.Contains(badIngredients, ingr.Title) {
+				good = false
+				break
+			}
+			if slices.Contains(goodIngredients, ingr.Title) {
+				count++
+			}
+		}
+		if count > 0 && good {
+			dict[set.SetId] = count
 		}
 	}
-	return result, nil
+	if err != nil {
+		return recipe, err
+	}
+	maximum := 0
+	bestSet := uint(0)
+	for key, count := range dict {
+		if count > maximum {
+			maximum = count
+			bestSet = key
+		}
+	}
+	// В теории, ID сета и рецепта равны. TODO: fix this shit
+	err = DB.Preload("IngSet").Preload("IngSet.Ingredients").
+		Where(bestSet).
+		First(&recipe).Error
+	return recipe, err
 }

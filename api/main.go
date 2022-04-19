@@ -16,17 +16,17 @@ func GetRecipes(c *fiber.Ctx) error {
 		})
 		return err
 	}
-	recipes, er := db.FindRecipes(request.GoodIngredients, request.BadIngredients)
+	recipe, er := db.FindRecipes(request.GoodIngredients, request.BadIngredients)
 	if er != nil {
 		c.Status(http.StatusNotFound).JSON(&fiber.Map{
 			"message":  "Not found",
-			"response": recipes,
+			"response": recipe,
 		})
 		return er
 	}
 	c.Status(http.StatusOK).JSON(&fiber.Map{
 		"message":  "OK",
-		"response": recipes,
+		"response": recipe,
 	})
 	return nil
 }
