@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"search/db"
@@ -16,7 +15,6 @@ func CreateRecipe(c *fiber.Ctx) error {
 		c.Status(http.StatusBadRequest)
 		return err
 	}
-	fmt.Println(request)
 	recipe := db.Recipe{
 		Title:       request.Title,
 		Description: request.Description,
@@ -26,6 +24,7 @@ func CreateRecipe(c *fiber.Ctx) error {
 	for _, ingr := range request.Ingredients {
 		recipe.IngSet.Ingredients = append(recipe.IngSet.Ingredients, db.Ingredient{Title: ingr})
 	}
+	recipe.IngSet.Counts = request.IngredientsSetCounts
 	if err = db.DB.Create(&recipe).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		return err
@@ -65,5 +64,30 @@ func AddRate(c *fiber.Ctx) error {
 		return err
 	}
 	c.Status(http.StatusOK)
+	return nil
+}
+
+func GetRecipes(c *fiber.Ctx) error {
+	c.Accepts("application/json") // "application/json"
+	request := new(RequestJSON)
+	if err := c.BodyParser(request); err != nil {
+		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":  "error",
+			"response": []RecipeJSON{},
+		})
+		return err
+	}
+	recipe, er := db.FindRecipes(request.GoodIngredients, request.BadIngredients)
+	if er != nil {
+		c.Status(http.StatusNotFound).JSON(&fiber.Map{
+			"message":  "Not found",
+			"response": recipe,
+		})
+		return er
+	}
+	c.Status(http.StatusOK).JSON(&fiber.Map{
+		"message":  "OK",
+		"response": recipe,
+	})
 	return nil
 }

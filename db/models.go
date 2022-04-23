@@ -12,6 +12,7 @@ type Recipe struct {
 type IngredientsSet struct {
 	SetId       uint         `gorm:"primary_key:true"`
 	Ingredients []Ingredient `gorm:"many2many:recipe_ingredients"`
+	Counts      string       // just JSON with data. like {"молоко": "3мл"}
 }
 type Ingredient struct {
 	Title string `gorm:"primary_key:true"`
