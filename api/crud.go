@@ -19,6 +19,8 @@ func CreateRecipe(c *fiber.Ctx) error {
 		Title:       request.Title,
 		Description: request.Description,
 		Link:        request.Link,
+		Energy:      request.Energy,
+		Steps:       request.Steps,
 		IngSet:      db.IngredientsSet{},
 	}
 	for _, ingr := range request.Ingredients {

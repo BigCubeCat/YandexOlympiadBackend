@@ -4,9 +4,11 @@ type Recipe struct {
 	RecipeId    uint `gorm:"primary_key:true"`
 	Title       string
 	Description string
+	Link        string
+	Energy      string
+	Steps       string
 	CountRates  int
 	Rating      float32
-	Link        string
 	IngSet      IngredientsSet `gorm:"foreignKey:set_id"`
 }
 type IngredientsSet struct {
