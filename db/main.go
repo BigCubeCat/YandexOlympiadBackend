@@ -6,6 +6,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
+	"math/rand"
+	"time"
 )
 
 var DB *gorm.DB
@@ -26,9 +28,9 @@ func InitDB(dbName string) {
 
 func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, error) {
 	var (
-		recipe Recipe
-		sets   []IngredientsSet
-		err    error
+		recipes []Recipe
+		sets    []IngredientsSet
+		err     error
 	)
 	dict := make(map[uint]int)
 	err = DB.Preload("Ingredients").Find(&sets).Error
@@ -50,19 +52,20 @@ func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, err
 		}
 	}
 	if err != nil {
-		return recipe, err
+		return Recipe{}, err
 	}
-	maximum := 0
-	bestSet := uint(0)
-	for key, count := range dict {
-		if count > maximum {
-			maximum = count
-			bestSet = key
-		}
+	var possibleRecipes []uint
+	for key, _ := range dict {
+		possibleRecipes = append(possibleRecipes, key)
 	}
 	// В теории, ID сета и рецепта равны. TODO: fix this shit
 	err = DB.Preload("IngSet").Preload("IngSet.Ingredients").
-		Where(bestSet).
-		First(&recipe).Error
-	return recipe, err
+		Where("recipe_id IN ?", possibleRecipes).Order("rating").
+		Find(&recipes).Error
+	if rand.Intn(2) == 1 {
+		return recipes[0], err
+	}
+	rand.Seed(time.Now().UnixNano())
+	index := rand.Intn(len(recipes))
+	return recipes[index], err
 }
