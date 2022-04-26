@@ -55,13 +55,51 @@ func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, err
 		return Recipe{}, err
 	}
 	var possibleRecipes []uint
-	for key, _ := range dict {
-		possibleRecipes = append(possibleRecipes, key)
+	maximumSuggest := 0
+	for _, value := range dict {
+		if maximumSuggest < value {
+			maximumSuggest = value
+		}
+	}
+	for key, count := range dict {
+		if count == maximumSuggest {
+			possibleRecipes = append(possibleRecipes, key)
+		}
 	}
 	// В теории, ID сета и рецепта равны. TODO: fix this shit
 	err = DB.Preload("IngSet").Preload("IngSet.Ingredients").
 		Where("recipe_id IN ?", possibleRecipes).Order("rating").
 		Find(&recipes).Error
+	if rand.Intn(2) == 1 {
+		return recipes[0], err
+	}
+	rand.Seed(time.Now().UnixNano())
+	index := rand.Intn(len(recipes))
+	return recipes[index], err
+}
+
+func FindByTitle(title string, bad []string) (Recipe, error) {
+	var recipes []Recipe
+	var goodRecipes []Recipe
+	var calm bool
+	err := DB.Preload("IngSet").Preload("IngSet.Ingredients").
+		Where("Title LIKE ?", title+"%").Order("rating").Find(&recipes).Error
+	if err != nil {
+		return Recipe{}, err
+	}
+	for _, recipe := range recipes {
+		// Check, that recipe not contains "bad" ingredients
+		calm = true
+		for _, ingr := range recipe.IngSet.Ingredients {
+			if slices.Contains(bad, ingr.Title) {
+				calm = false
+				break
+			}
+		}
+		if calm {
+			goodRecipes = append(goodRecipes, recipe)
+		}
+	}
 	if rand.Intn(2) == 1 {
 		return recipes[0], err
 	}

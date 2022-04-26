@@ -10,6 +10,11 @@ type RecipeJSON struct {
 	IngredientsSetCounts string   `json:"counts"`
 }
 
+type RecipeTitleJSON struct {
+	Title          string   `json:"title"`
+	BadIngredients []string `json:"bad"`
+}
+
 type RequestJSON struct {
 	GoodIngredients []string `json:"good"`
 	BadIngredients  []string `json:"bad"`

@@ -39,6 +39,7 @@ func main() {
 	app := fiber.New(fiber.Config{})
 
 	app.Add("GET", "/find", api.GetRecipes)
+	app.Add("GET", "/title", api.GetByTitle)
 	app.Add("POST", "/add", api.CreateRecipe)
 	app.Add("PUT", "/rate/:id/:rate", api.AddRate)
 

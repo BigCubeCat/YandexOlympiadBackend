@@ -54,7 +54,6 @@ func AddRate(c *fiber.Ctx) error {
 		return err
 	}
 	newRating := (recipe.Rating*float32(recipe.CountRates) + float32(rateNum)) / float32(recipe.CountRates+1)
-	c.Status(http.StatusOK)
 	err = db.DB.Model(&recipe).Updates(
 		db.Recipe{
 			Rating:     newRating,
@@ -80,6 +79,31 @@ func GetRecipes(c *fiber.Ctx) error {
 		return err
 	}
 	recipe, er := db.FindRecipes(request.GoodIngredients, request.BadIngredients)
+	if er != nil {
+		c.Status(http.StatusNotFound).JSON(&fiber.Map{
+			"message":  "Not found",
+			"response": recipe,
+		})
+		return er
+	}
+	c.Status(http.StatusOK).JSON(&fiber.Map{
+		"message":  "OK",
+		"response": recipe,
+	})
+	return nil
+}
+
+func GetByTitle(c *fiber.Ctx) error {
+	c.Accepts("application/json") // "application/json"
+	request := new(RecipeTitleJSON)
+	if err := c.BodyParser(request); err != nil {
+		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":  "error",
+			"response": []RecipeJSON{},
+		})
+		return err
+	}
+	recipe, er := db.FindByTitle(request.Title, request.BadIngredients)
 	if er != nil {
 		c.Status(http.StatusNotFound).JSON(&fiber.Map{
 			"message":  "Not found",
