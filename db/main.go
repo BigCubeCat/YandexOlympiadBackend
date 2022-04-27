@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"golang.org/x/exp/slices"
 	"gorm.io/driver/sqlite"
@@ -70,6 +71,9 @@ func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, err
 	err = DB.Preload("IngSet").Preload("IngSet.Ingredients").
 		Where("recipe_id IN ?", possibleRecipes).Order("rating").
 		Find(&recipes).Error
+	if len(recipes) == 0 {
+		return Recipe{}, errors.New("not found")
+	}
 	if rand.Intn(2) == 1 {
 		return recipes[0], err
 	}
@@ -83,7 +87,7 @@ func FindByTitle(title string, bad []string) (Recipe, error) {
 	var goodRecipes []Recipe
 	var calm bool
 	err := DB.Preload("IngSet").Preload("IngSet.Ingredients").
-		Where("Title LIKE ?", title+"%").Order("rating").Find(&recipes).Error
+		Where("Title LIKE lower(?)", title+"%").Order("rating").Find(&recipes).Error
 	if err != nil {
 		return Recipe{}, err
 	}
@@ -99,6 +103,9 @@ func FindByTitle(title string, bad []string) (Recipe, error) {
 		if calm {
 			goodRecipes = append(goodRecipes, recipe)
 		}
+	}
+	if len(recipes) == 0 {
+		return Recipe{}, errors.New("not found")
 	}
 	if rand.Intn(2) == 1 {
 		return recipes[0], err
