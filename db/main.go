@@ -114,3 +114,17 @@ func FindByTitle(title string, bad []string) (Recipe, error) {
 	index := rand.Intn(len(recipes))
 	return recipes[index], err
 }
+
+func FindById(id string) (Recipe, error) {
+	var recipes []Recipe
+	err := DB.Preload("IngSet").Preload("IngSet.Ingredients").
+		Where("recipe_id LIKE ?", id).Order("rating").Find(&recipes).Error
+	fmt.Println(recipes)
+	if err != nil {
+		return Recipe{}, err
+	}
+	if len(recipes) == 0 {
+		return Recipe{}, errors.New("not found")
+	}
+	return recipes[0], err
+}

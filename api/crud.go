@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"net/http"
 	"search/db"
@@ -116,4 +117,30 @@ func GetByTitle(c *fiber.Ctx) error {
 		"response": recipe,
 	})
 	return nil
+}
+
+func GetById(c *fiber.Ctx) error {
+	var id string
+	id = c.Params("id")
+	if id == "" {
+		c.Status(http.StatusBadRequest).JSON(&fiber.Map{
+			"message":  "BadRequest",
+			"response": "",
+		})
+		return errors.New("BadRequest: id cannot be empty")
+	}
+	recipe, er := db.FindById(id)
+	if er != nil {
+		c.Status(http.StatusNotFound).JSON(&fiber.Map{
+			"message":  "Not found",
+			"response": recipe,
+		})
+		return er
+	}
+	c.Status(http.StatusOK).JSON(&fiber.Map{
+		"message":  "OK",
+		"response": recipe,
+	})
+	return nil
+
 }

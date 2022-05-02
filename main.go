@@ -40,6 +40,7 @@ func main() {
 
 	app.Add("GET", "/find", api.GetRecipes)
 	app.Add("GET", "/title", api.GetByTitle)
+	app.Add("GET", "/id/:id", api.GetById)
 	app.Add("POST", "/add", api.CreateRecipe)
 	app.Add("PUT", "/rate/:id/:rate", api.AddRate)
 
