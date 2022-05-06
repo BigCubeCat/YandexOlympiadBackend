@@ -2,7 +2,6 @@ package db
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/exp/slices"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -17,7 +16,7 @@ func InitDB(dbName string) {
 	var err error
 	DB, err = gorm.Open(sqlite.Open(dbName), &gorm.Config{})
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln("Cant open DB")
 		return
 	}
 	err = DB.AutoMigrate(&Recipe{}, &Ingredient{}, &IngredientsSet{})
@@ -27,6 +26,10 @@ func InitDB(dbName string) {
 	}
 }
 
+func GetSession() *gorm.DB {
+	return DB.Session(&gorm.Session{})
+}
+
 func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, error) {
 	var (
 		recipes []Recipe
@@ -34,7 +37,7 @@ func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, err
 		err     error
 	)
 	dict := make(map[uint]int)
-	err = DB.Preload("Ingredients").Find(&sets).Error
+	err = GetSession().Preload("Ingredients").Find(&sets).Error
 	for _, set := range sets {
 		count := 0
 		good := true
@@ -68,7 +71,7 @@ func FindRecipes(goodIngredients []string, badIngredients []string) (Recipe, err
 		}
 	}
 	// В теории, ID сета и рецепта равны. TODO: fix this shit
-	err = DB.Preload("IngSet").Preload("IngSet.Ingredients").
+	err = GetSession().Preload("IngSet").Preload("IngSet.Ingredients").
 		Where("recipe_id IN ?", possibleRecipes).Order("rating").
 		Find(&recipes).Error
 	if len(recipes) == 0 {
@@ -86,7 +89,7 @@ func FindByTitle(title string, bad []string) (Recipe, error) {
 	var recipes []Recipe
 	var goodRecipes []Recipe
 	var calm bool
-	err := DB.Preload("IngSet").Preload("IngSet.Ingredients").
+	err := GetSession().Preload("IngSet").Preload("IngSet.Ingredients").
 		Where("Title LIKE lower(?)", title+"%").Order("rating").Find(&recipes).Error
 	if err != nil {
 		return Recipe{}, err
@@ -117,9 +120,8 @@ func FindByTitle(title string, bad []string) (Recipe, error) {
 
 func FindById(id string) (Recipe, error) {
 	var recipes []Recipe
-	err := DB.Preload("IngSet").Preload("IngSet.Ingredients").
+	err := GetSession().Preload("IngSet").Preload("IngSet.Ingredients").
 		Where("recipe_id LIKE ?", id).Order("rating").Find(&recipes).Error
-	fmt.Println(recipes)
 	if err != nil {
 		return Recipe{}, err
 	}

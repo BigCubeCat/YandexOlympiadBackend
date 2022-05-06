@@ -28,7 +28,7 @@ func CreateRecipe(c *fiber.Ctx) error {
 		recipe.IngSet.Ingredients = append(recipe.IngSet.Ingredients, db.Ingredient{Title: ingr})
 	}
 	recipe.IngSet.Counts = request.IngredientsSetCounts
-	if err = db.DB.Create(&recipe).Error; err != nil {
+	if err = db.GetSession().Create(&recipe).Error; err != nil {
 		c.Status(http.StatusInternalServerError)
 		return err
 	}
@@ -51,11 +51,11 @@ func AddRate(c *fiber.Ctx) error {
 		rateNum = 5
 	}
 	var recipe db.Recipe
-	if err := db.DB.Where("recipe_id = ?", id).First(&recipe).Error; err != nil {
+	if err := db.GetSession().Where("recipe_id = ?", id).First(&recipe).Error; err != nil {
 		return err
 	}
 	newRating := (recipe.Rating*float32(recipe.CountRates) + float32(rateNum)) / float32(recipe.CountRates+1)
-	err = db.DB.Model(&recipe).Updates(
+	err = db.GetSession().Model(&recipe).Updates(
 		db.Recipe{
 			Rating:     newRating,
 			CountRates: recipe.CountRates + 1,
